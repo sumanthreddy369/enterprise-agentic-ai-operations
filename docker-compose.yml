@@ -1,0 +1,68 @@
+name: enterprise-agentic-ai-operations
+services:
+  postgres:
+    image: postgres:16.6-alpine
+    environment:
+      POSTGRES_DB: operations
+      POSTGRES_USER: ops
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/init_local.py first}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ops -d operations"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  opensearch:
+    image: opensearchproject/opensearch:2.19.1
+    environment:
+      discovery.type: single-node
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports: ["127.0.0.1:19200:9200"]
+    volumes: ["opensearch_data:/usr/share/opensearch/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health | grep -Eq 'yellow|green'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    ulimits:
+      nofile: {soft: 65536, hard: 65536}
+  migrate:
+    build: {context: ., dockerfile: infrastructure/Dockerfile}
+    command: ["/opt/venv/bin/alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ops:${POSTGRES_PASSWORD}@postgres:5432/operations
+    depends_on:
+      postgres: {condition: service_healthy}
+  api:
+    build: {context: ., dockerfile: infrastructure/Dockerfile}
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ops:${POSTGRES_PASSWORD}@postgres:5432/operations
+      OPENSEARCH_URL: http://opensearch:9200
+      OPENSEARCH_REQUIRED: "true"
+      API_READ_KEY: ${API_READ_KEY:?Run scripts/init_local.py first}
+      API_WRITE_KEY: ${API_WRITE_KEY:?Run scripts/init_local.py first}
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      opensearch: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "/opt/venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7.4.2-alpine
+    profiles: ["future"]
+    ports: ["127.0.0.1:16379:6379"]
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    profiles: ["future"]
+    ports: ["127.0.0.1:16333:6333"]
+    volumes: ["qdrant_data:/qdrant/storage"]
+volumes:
+  postgres_data:
+  opensearch_data:
+  qdrant_data:

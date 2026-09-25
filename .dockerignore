@@ -1,0 +1,15 @@
+.git
+.env*
+.venv
+.local
+data/raw
+data/bronze
+data/silver
+data/gold
+data/manifests
+data/.locks
+**/__pycache__
+*.db*
+.pytest_cache
+.mypy_cache
+.ruff_cache
