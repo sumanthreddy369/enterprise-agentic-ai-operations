@@ -15,7 +15,9 @@ Verified locally on 2026-09-25, Windows, Python 3.11.9, uv 0.12.15. These are ob
 | Tracked-file exposure check | Passed. Narrow pattern/filename/size checks; not a comprehensive secret scan. |
 | Local container runtime | **Blocked:** Docker Desktop crashes while initializing its local `sailor-ingest.sock` socket; Linux engine pipe is unavailable. No reset/deletion of Docker data performed. |
 | Local PostgreSQL/OpenSearch runtime | Not claimed passed. Requires a working Docker engine or separately configured services. |
-| GitHub Actions | Workflow includes unit/static checks, real PostgreSQL/OpenSearch tests, SQL analytics execution, API image build and container readiness smoke test. Remote outcome is recorded after the push. |
+| GitHub Actions | **Passed** for implementation commit `1bc71e0`: quality checks, 41 unit/API/security tests, 2 real PostgreSQL/OpenSearch integration tests, PostgreSQL SQL analytics, API image build and container readiness. [Verified run](https://github.com/sumanthreddy369/enterprise-agentic-ai-operations/actions/runs/36153715653). |
+
+The successful Linux CI run validates real PostgreSQL/OpenSearch and container execution. The local Windows Docker startup issue remains an environment limitation; it does not represent a failed backend test.
 
 ## Full acquired-file validation
 
