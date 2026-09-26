@@ -26,6 +26,8 @@ This is the implementation plan for `enterprise-agentic-ai-operations`, updated 
 | BM25 | OpenSearch keyword search in M1; document retrieval in M2 | Preserve exact error codes and technical identifiers. Use explicit document ACL/source filters. |
 | Hybrid retrieval + Reciprocal Rank Fusion | M2 | Retrieve dense and BM25 candidates, fuse by stable document/chunk ID with RRF, deduplicate, then rerank. Never combine incomparable raw scores by naive addition. |
 | BGE reranker | M2 | Cross-encoder reranking of a bounded candidate set, with explicit model revision/license, timeout, batch size and fallback to fused ranking. |
+| ONNX + ONNX Runtime | Optional M2 inference backend | Export approved embedding/reranker models to ONNX; benchmark ONNX Runtime against the PyTorch baseline. ONNX is the model format, not an execution engine. |
+| OpenVINO | Optional M2 Intel-targeted backend | Benchmark on the actual Intel deployment hardware, using either the direct Sentence Transformers backend or ONNX Runtime's OpenVINO provider. Export/device compatibility must be verified for each model. |
 | NDCG and MRR | M2 acceptance tests | Human-labeled relevance judgments; nDCG@10, MRR@10, Recall@k, latency and memory. Compare BM25, dense, fused and reranked retrieval with a held-out query set. No invented performance numbers. |
 | LangGraph and ReAct agents | M3, after data/retrieval gates pass | Typed checkpointed state, bounded parallel investigations, read-only allowlisted tools, structured evidence-linked outputs. ReAct only where iterative tool selection adds value. |
 | MCP | M3 | Typed read-only investigation tools, bounded results, auth context and audit spans. |
@@ -45,7 +47,8 @@ Deliver reproducible acquisition for both BPI incident datasets and five Loghub 
 3. Ingest authorized operational documents through Docling, preserving source version, chunk coordinates and ACLs.
 4. Build BGE/Qdrant HNSW and OpenSearch BM25 indexes; implement RRF and bounded BGE reranking behind a retrieval interface.
 5. Publish the evaluation dataset provenance and results for nDCG@10/MRR@10/Recall@k and p95 latency. Set release thresholds from a measured baseline.
-6. Benchmark throughput before deciding on Ray, Milvus, Unstructured or a psycopg COPY path.
+6. Benchmark PyTorch, ONNX Runtime and OpenVINO for embedding/reranker inference using the [inference optimization plan](inference-optimization.md). Promote a backend only after quality, latency, memory and compatibility gates pass.
+7. Benchmark throughput before deciding on Ray, Milvus, Unstructured or a psycopg COPY path.
 
 ### M3 — Evidence-grounded multi-agent investigations
 
