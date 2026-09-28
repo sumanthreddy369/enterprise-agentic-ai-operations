@@ -1,6 +1,6 @@
 # Technology decisions and milestone plan
 
-This document retains technology decisions and the original milestone history. The [enterprise target architecture and Phase A–M plan](target-architecture.md) is now the governing roadmap, including Azure, LiteLLM, pgvector, A2A, DeepEval and the React dashboard. **Milestone 1 and Phase B interfaces are delivered. Phase C is next.** The M1�M4 sections below retain the original grouping; the Phase A�M roadmap governs current execution. See [Phase B](phase-b.md) for the implemented tool boundary.
+This document retains technology decisions and the original milestone history. The [enterprise target architecture and Phase A–M plan](target-architecture.md) is now the governing roadmap, including Azure, LiteLLM, pgvector, A2A, DeepEval and the React dashboard. **Milestone 1 and Phase B interfaces are delivered. Phase C is next.** The M1–M4 sections below retain the original grouping; the Phase A–M roadmap governs current execution. See [Phase B](phase-b.md) for the implemented tool boundary.
 
 ## What fits and where
 
@@ -36,11 +36,11 @@ This document retains technology decisions and the original milestone history. T
 
 ## Milestone gates
 
-### M1 — Enterprise data foundation (current)
+### M1 — Enterprise data foundation (delivered)
 
 Deliver reproducible acquisition for both BPI incident datasets and five Loghub samples, immutable Bronze, validated Silver, analytical Gold, PostgreSQL schema/migrations, OpenSearch indexing/search, initial authenticated incident API, tests/static checks, container definitions, CI, README and a factual verification report. Keep unrelated sources independent. The original delivery stopped here as requested. Further development follows the Phase A–M plan.
 
-### M2 — Live extraction and evaluated retrieval (next)
+### M2 — Live extraction and evaluated retrieval (original grouping)
 
 1. Define async connector protocols and equivalent mock/real ServiceNow, Splunk and Graph implementations.
 2. Add MSAL/OAuth, pagination, Retry-After support, incremental watermarks, extraction concurrency and recoverable hourly/daily jobs.

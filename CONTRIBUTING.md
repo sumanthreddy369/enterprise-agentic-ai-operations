@@ -1,6 +1,6 @@
 # Contributing
 
-Use Python 3.11 and the locked environment (`uv sync --frozen --python 3.11`). Follow the [Phase A–M plan](docs/target-architecture.md); update implementation status and evidence with each completed step. Keep synthetic fixtures labeled and preserve the existing source provenance.
+Use Python 3.11 and the locked environment (`uv sync --frozen --python 3.11`). Follow the [Phase Aâ€“M plan](docs/target-architecture.md); update implementation status and evidence with each completed step. Keep synthetic fixtures labeled and preserve the existing source provenance.
 
 For runtime changes run:
 

@@ -1,95 +1,347 @@
 # Enterprise Agentic AI Operations
 
-A data-first foundation for an enterprise incident investigation platform. It acquires public IT incident and infrastructure-log datasets, preserves their provenance, produces validated analytical data, and exposes authenticated incident and log-search APIs.
+This repository implements a provenance-preserving incident data foundation. It acquires public incident and infrastructure-log datasets, produces Bronze, Silver, and Gold data, loads operational records into SQL, and exposes authenticated incident and log-search APIs. Typed contracts define later investigation, retrieval, model, and approval boundaries without implementing those runtimes.
 
-**Current scope: Milestone 1 data foundation plus Phase B interfaces.** No LLM agents, automated remediation, enterprise OAuth connectors, or RAG evaluation are implemented yet. The [technology plan](docs/technology-plan.md) assigns these to later milestones. This is a production-oriented portfolio foundation, not a production deployment certification.
+**Status: In development.** The data foundation and Phase B read-only tool boundary are complete. Agent execution, RAG, MCP, enterprise identity, approval execution, and the dashboard are not built.
 
-## Target platform
+---
 
-The [governing enterprise/Azure architecture and Phase A–M plan](docs/target-architecture.md) maps the current implementation to LangGraph specialists, MCP, optional A2A, hybrid RAG, LiteLLM, human approval, React and AKS. It includes an evidence-based status audit and acceptance gates. These are target capabilities; the implemented baseline now includes the [Phase B contracts and permission-checked log tool](docs/phase-b.md).
+## Repository structure
 
-## Target enterprise flowchart
+```text
+.
+├── apps/
+│   ├── api/main.py                         # FastAPI app, middleware, routes, lifespan
+│   └── dashboard/README.md                 # Dashboard placeholder
+├── data/
+│   ├── dataset_manifest.json               # URLs, checksums, schemas, licenses, limits
+│   ├── raw/                                # Ignored acquired source files
+│   ├── bronze/                             # Ignored immutable source copies
+│   ├── silver/                             # Ignored validated Parquet records
+│   └── gold/                               # Ignored analytical Parquet outputs
+├── docs/
+│   ├── flows/                              # Detailed implemented flow references
+│   ├── datasets.md                         # Dataset inventory and provenance
+│   ├── guardrails.md                       # Implemented and planned controls
+│   ├── phase-b.md                          # Typed tool-boundary scope
+│   └── target-architecture.md              # Phase A-M target, marked by status
+├── infrastructure/
+│   ├── Dockerfile                          # Python 3.11 API image
+│   ├── analytics.sql                       # PostgreSQL analytical views
+│   └── migrations/                         # Alembic environment and revision 0001
+├── scripts/
+│   ├── init_local.py                       # Create ignored local credentials
+│   ├── run_integration.py                  # PostgreSQL and OpenSearch tests
+│   ├── smoke_api.py                        # Real Uvicorn HTTP smoke test
+│   └── check_repository.py                 # Narrow tracked-file exposure check
+├── src/
+│   ├── domain/contracts.py                 # Frozen Phase B domain and tool contracts
+│   ├── ingestion/                          # CLI and bounded acquisition
+│   ├── integrations/                       # OpenSearch client and typed adapter
+│   ├── models/                             # Pydantic records and SQLAlchemy schema
+│   ├── pipelines/                          # Parsers, normalization, products, loading
+│   ├── security/                           # Auth, policy, egress, ASGI guardrails
+│   ├── services/                           # Settings, ports, tools, database helpers
+│   ├── observability/logging.py             # JSON log formatter
+│   ├── agents/README.md                     # Agent runtime placeholder
+│   ├── mcp/README.md                        # MCP placeholder
+│   ├── orchestration/README.md              # Orchestration placeholder
+│   └── rag/README.md                        # RAG placeholder
+├── tests/                                   # Unit, API, security, integration tests
+├── .github/workflows/ci.yml                 # Quality and real-backend CI jobs
+├── docker-compose.yml                       # Local services and future profiles
+├── pyproject.toml                           # Package, CLI, tools, dependencies
+├── uv.lock                                  # Locked Python environment
+└── alembic.ini                              # Migration configuration
+```
 
-The diagram below is the intended platform. **Implemented today:** data ingestion, incident APIs, OpenSearch log search, typed service contracts and a permission-checked read-only tool registry. Agents, MCP/A2A, hybrid RAG, model calls, approvals, React and Azure deployment remain planned. Human approval gates consequential execution.
+The placeholder directories contain no runtime implementation. See the [full tracked tree](docs/repository-map.md).
+
+---
+
+## Dataset acquisition flow
 
 ```mermaid
 flowchart TD
-    UI[React dashboard] <-->|REST and authenticated WebSocket| API[FastAPI / identity / authorization]
-    API --> RUN[Investigation service and durable job worker]
-    RUN --> SUP[LangGraph supervisor / planner]
-    SUP --> WORK[Incident / Log / Knowledge / Data-SQL / Security agents]
-    WORK --> TOOLS[Permission-enforcing tool service]
-    TOOLS --> MCP[MCP clients and servers]
-    MCP --> ENT[ServiceNow / GitHub / Splunk / documents / monitoring / SQL]
-    WORK --> RET[ACL-filtered retrieval / BM25 plus dense / RRF / reranker]
-    RET --> IDX[Qdrant primary / pgvector alternative / OpenSearch lexical]
-    WORK --> LLM[LiteLLM provider gateway]
-    LLM --> MODEL[Azure OpenAI / OpenAI / optional approved Qwen or Granite endpoint]
-    WORK --> REVIEW[Evidence correlation / reviewer / hypothesis validation]
-    REVIEW --> REPORT[Evidence-linked report and proposed action]
-    REPORT --> API
-    API --> APPROVAL[Authenticated human approval service]
-    APPROVAL --> EXEC[Allowlisted executor / timeout / rollback]
-    EXEC --> ENT
-    SUP -. optional delegated task .-> A2A[A2A boundary to independent agent service]
-    RUN --> STATE[PostgreSQL runs / checkpoints / audit / evidence]
-    RUN --> REDIS[Redis coordination and transient state]
+    subgraph "CLI selection"
+        CLI["src.ingestion.cli.main"] --> Catalog["acquire.catalog"]
+        Catalog --> Known{"Known dataset key?"}
+        Known -->|"no"| ArgError["argparse error"]
+        Known -->|"yes"| Acquire["acquire.acquire"]
+    end
+    subgraph "Bounded download"
+        Acquire --> Existing{"Raw file exists?"}
+        Existing -->|"yes"| ExistingHash{"Checksum matches?"}
+        ExistingHash -->|"no"| Refuse["Refuse overwrite"]
+        ExistingHash -->|"yes"| Provenance["Write provenance.json"]
+        Existing -->|"no"| URL["validate_data_url"]
+        URL --> Download["download to .partial"]
+        Download --> Redirect{"Redirect allowed?"}
+        Redirect -->|"no"| Reject["Reject acquisition"]
+        Redirect -->|"yes"| Hash{"SHA-256 matches?"}
+        Hash -->|"no"| Reject
+        Hash -->|"yes"| Promote["Atomic promotion to data/raw"]
+        Promote --> Provenance
+    end
 ```
 
-Azure target: Azure OpenAI, Foundry, AKS, Blob Storage/ADLS, Key Vault, Entra ID, Azure Database for PostgreSQL, Azure Monitor and Application Insights. Azure ML is conditional on a training or managed model-lifecycle workload. No Azure resources are deployed by this repository yet.
+The manifest controls source URLs, expected size, checksum, parser, and license metadata. A partial or changed file is never promoted as a successful acquisition.
 
-## Delivery status � 2026-09-27
+**Network policy**: Downloads require HTTPS and an exact host allowlist. Redirects are revalidated, limited to six requests, and cannot add credentials, fragments, or nonstandard ports.
 
-| Phase | Status |
-| --- | --- |
-| A: audit and foundation | Baseline audited; data/API/backend checks verified |
-| B: domain/service/tool interfaces | Complete; typed contracts and permission-checked log-search path |
-| C: durable async infrastructure | Next: PostgreSQL investigation runs/jobs and Redis coordination |
-| D�F: enterprise adapters, retrieval, agents | Planned |
-| G�I: MCP, conditional A2A, human approval | Planned |
-| J�M: evaluation, telemetry, security hardening, deployment/dashboard | Planned; feature-level checks and safeguards start earlier |
+**Bounds**: Transport failures retry three times. Transfers reject content encoding, excess bytes, checksum mismatch, and a download duration above 120 seconds.
 
-Latest implementation verification: **64 local tests passed, 2 backend tests skipped locally**; real backend and container checks passed in [GitHub CI](https://github.com/sumanthreddy369/enterprise-agentic-ai-operations/actions/runs/36365649081). See [Phase B details](docs/phase-b.md) and the [full acceptance plan](docs/target-architecture.md).
+**Concurrency**: A per-dataset file lock serializes acquisition. Existing raw bytes are reused only after checksum verification.
 
-## Documentation guide
+**Status**: Complete for the seven entries in `data/dataset_manifest.json`. Large Loghub archives are listed but not automatically downloaded or extracted.
 
-- [Dataset catalog, schemas, provenance and reproduction](docs/datasets.md)
-- [Machine-readable dataset manifest](data/dataset_manifest.json)
-- [Phase A�M architecture and Azure mapping](docs/target-architecture.md)
-- [Technology choices and original milestone history](docs/technology-plan.md)
-- [Implemented tool boundary](docs/phase-b.md)
-- [Guardrails and showcase](docs/guardrails.md), [security boundary](SECURITY.md)
-- [Verification history](docs/verification.md), [ONNX/OpenVINO plan](docs/inference-optimization.md)
-- [Contribution workflow](CONTRIBUTING.md) and [ignore rules](.gitignore)
+See [Dataset and pipeline flow](docs/flows/data-pipeline.md).
 
-## Implemented data flow
+---
+
+## Bronze, Silver, Gold, and load flow
 
 ```mermaid
 flowchart LR
-  Sources[BPI 2013 / BPI 2014 / Loghub] --> Acquire[HTTPS + pinned checksums]
-  Acquire --> Bronze[Immutable original bytes]
-  Bronze --> Parse[Pydantic validation / source parsers]
-  Parse --> Silver[Silver Parquet]
-  Parse --> Quarantine[Quarantine JSONL]
-  Silver --> Gold[Gold analytical Parquet]
-  Silver --> PG[PostgreSQL incidents / events / logs]
-  Silver --> OS[OpenSearch log index]
-  PG --> API[FastAPI + RBAC + audit]
-  OS --> Tools[Typed log adapter + permission-checked tools]
-  Tools --> API
+    subgraph "Process"
+        Input["Verified input file"] --> Run["pipelines.runner.process"]
+        Run --> Identity["Run ID from version, dataset, hash, limit, timezone"]
+        Identity --> Reuse{"Verified manifest outputs exist?"}
+        Reuse -->|"yes"| Previous["Return previous manifest"]
+        Reuse -->|"no"| Bronze["Immutable Bronze copy"]
+    end
+    subgraph "Parse and validate"
+        Bronze --> Parser{"Manifest parser?"}
+        Parser -->|"xes"| XES["xes_records"]
+        Parser -->|"bpi-csv"| CSV["csv_incidents"]
+        Parser -->|"log parser"| Logs["log_records"]
+        XES --> Records["Pydantic records"]
+        CSV --> Records
+        Logs --> Records
+        Records --> Valid{"Valid and unique?"}
+        Valid -->|"no"| Quarantine["Quarantine or duplicate count"]
+        Valid -->|"yes"| Silver["Silver Parquet"]
+    end
+    subgraph "Publish"
+        Silver --> Gold["runner.gold"]
+        Silver --> Load["load_silver"]
+        Load --> SQL["SQLite or PostgreSQL"]
+        Load -->|"logs and index enabled"| OS["OpenSearch"]
+        Gold --> Manifest["Checksummed run manifest"]
+    end
 ```
 
-Source IDs are namespaced. Loghub datasets are **not** linked to BPI incidents. Similar identifiers or timestamps do not establish relationships. BPI 2013 events link only to their original trace IDs. No fabricated resolutions or root-cause labels are generated.
+The pipeline preserves original bytes and assigns deterministic run and record identities. Database and search writes are replayable, but they are not one distributed transaction.
 
-## Stack
+**Trace integrity**: A BPI 2013 limit counts complete XES traces. It does not truncate an incident timeline.
 
-Python 3.11+, Pydantic v2, FastAPI, asyncio/httpx, Pandas 2.x, Polars, PyArrow, SQLAlchemy 2.x, Alembic, PostgreSQL 16 and OpenSearch. Tenacity handles download transport retries; log indexing has bounded retries, item-level failure detection and a circuit breaker. JSON logging includes request IDs and durations.
+**Time handling**: Offset-aware timestamps normalize to UTC. Naive timestamps remain unset unless the operator supplies `--timezone`. Ambiguous or nonexistent local times are rejected.
 
-SQLite is an explicitly limited local test/development backend. PostgreSQL is the deployment target. Redis and Qdrant are optional `future` Compose services with no M1 application integration.
+**Quarantine**: Invalid source rows retain a reason and source context. BPI 2014 rows without incident IDs are quarantined; IDs are not fabricated.
 
-## Local setup
+**Replay**: SQL uses source-scoped conflict handling. OpenSearch hashes `source` and `source_id` for document IDs. Re-running the same input repairs interrupted indexing.
 
-Install Python 3.11+ and [uv](https://docs.astral.sh/uv/). Run commands from the repository root:
+**Status**: Complete for local files, SQLite/PostgreSQL loading, and OpenSearch log indexing. Scheduling and live enterprise extraction are planned.
+
+See [Dataset and pipeline flow](docs/flows/data-pipeline.md).
+
+---
+
+## HTTP request and authentication flow
+
+```mermaid
+flowchart TD
+    subgraph "ASGI boundary"
+        Client["HTTP client"] --> Host["TrustedHostMiddleware"]
+        Host --> Guard["RequestGuardrails"]
+        Guard --> Limits{"Request within limits?"}
+        Limits -->|"no"| Reject["4xx or 503"]
+        Limits -->|"yes"| Deadline["Body and handler deadlines"]
+    end
+    subgraph "Route dependency"
+        Deadline --> Public{"Public route?"}
+        Public -->|"yes"| Handler["FastAPI route handler"]
+        Public -->|"no"| Principal["security.auth.principal"]
+        Principal --> Token{"Bearer token matches?"}
+        Token -->|"no"| Unauthorized["401"]
+        Token -->|"yes"| Role{"Writer required?"}
+        Role -->|"reader denied"| Forbidden["403"]
+        Role -->|"allowed"| Validate["Pydantic validation"]
+        Validate --> Handler
+    end
+    Handler --> Errors{"Handled error?"}
+    Errors -->|"yes"| Safe["Redacted JSON error"]
+    Errors -->|"no"| Response["JSON with request ID"]
+```
+
+The ASGI boundary rejects oversized or slow requests before route logic. Authentication uses local static reader and writer keys; it is not enterprise identity.
+
+**Request limits**: Headers are limited to 16 KiB, query strings to 4096 bytes, and bodies to `MAX_REQUEST_BYTES`. Mutating requests require JSON. Compressed bodies are rejected.
+
+**Capacity**: `/health` bypasses the local fixed-window rate limit. Other requests share an in-process client map and concurrency counter. These controls are not distributed across replicas.
+
+**Errors**: Validation responses omit submitted values. Database and search failures return sanitized 503 responses. Security headers disable caching, framing, MIME sniffing, and referrers.
+
+**Production gate**: `Settings` rejects `ENVIRONMENT=production`. Entra/OIDC and deployment review are required before that gate can change.
+
+**Status**: Complete for the local API boundary. Enterprise authentication, tenancy, TLS termination, and distributed rate limiting are planned.
+
+See [HTTP API flow](docs/flows/http-api.md).
+
+---
+
+## Incident creation flow
+
+```mermaid
+flowchart TD
+    Writer["POST /api/v1/incidents"] --> Auth["writer dependency"]
+    Auth --> Body["IncidentCreate validation"]
+    Body --> Key["Hash identity and Idempotency-Key"]
+    Key --> Existing{"Idempotency record exists?"}
+    Existing -->|"same request hash"| Replay["Return stored incident"]
+    Existing -->|"different request hash"| Conflict["409 conflict"]
+    Existing -->|"no"| Insert["Create API-namespaced incident"]
+    Insert --> Atomic["Add idempotency and audit records"]
+    Atomic --> Commit{"Commit succeeds?"}
+    Commit -->|"yes"| Created["201 IncidentView"]
+    Commit -->|"integrity race"| Retry["Rollback and replay lookup"]
+    Retry -->|"record found"| Replay
+    Retry -->|"source collision"| Conflict
+```
+
+Incident creation commits the incident, idempotency record, and audit event in one SQL transaction. Client input cannot select a benchmark source namespace.
+
+**Validation**: Unknown fields fail. `opened_at` must contain a timezone and is normalized to UTC. The idempotency header length is 1 to 128 characters.
+
+**Collision rules**: Reusing a key with changed content returns 409. A different key cannot bypass the unique `(source, source_id)` constraint.
+
+**Status**: Complete for manual incident create, list, and get. Investigation and approval routes do not exist.
+
+See [HTTP API flow](docs/flows/http-api.md).
+
+---
+
+## Authorized log-search flow
+
+```mermaid
+flowchart TD
+    Route["GET /api/v1/logs"] --> Auth["principal dependency"]
+    Auth --> Context["auth.tool_context"]
+    Context --> Query["LogSearchQuery"]
+    Query --> Registry["ToolRegistry.execute"]
+    Registry --> Permission{"Permission valid?"}
+    Permission -->|"no"| Denied["403"]
+    Permission -->|"yes"| Capacity{"Tool capacity available?"}
+    Capacity -->|"no"| Busy["503 and Retry-After"]
+    Capacity -->|"yes"| Typed["TypedTool validation"]
+    Typed --> Adapter["OpenSearchLogSearch.search"]
+    Adapter --> Scope{"Tenant and sources allowed?"}
+    Scope -->|"no"| Denied
+    Scope -->|"yes"| Search["OpenSearch.search"]
+    Search --> Results{"Complete source-safe results?"}
+    Results -->|"no"| Invalid["Sanitized 503"]
+    Results -->|"yes"| Recheck["Permission and expiry recheck"]
+    Recheck --> Output["Bounded hits envelope"]
+```
+
+The route passes through a sealed, read-only registry that validates input, output, permission, timeout, concurrency, and output size.
+
+**Scope**: The server creates the authorization context. Client tenant or permission headers are ignored. Only the five configured Loghub sources are available through the API.
+
+**Backend behavior**: Search retries 429 and server failures three times. Three exhausted operations open the client circuit for 30 seconds. Partial shard results, timeouts, malformed records, and records outside the allowlist fail closed.
+
+**Tool limits**: The registry allows eight concurrent executions by default, a 10-second timeout, and 256 KiB serialized output. The API query limit is 1 to 100 results.
+
+**Status**: Complete for keyword log search. Dense retrieval, hybrid fusion, reranking, Qdrant, and pgvector are planned.
+
+See [Authorized log-search flow](docs/flows/log-search.md).
+
+---
+
+## Container and CI flow
+
+```mermaid
+flowchart TD
+    Push["Push or pull request"] --> Quality["Quality job"]
+    Push --> Backends["Backends job"]
+    subgraph "Quality"
+        Quality --> Sync["uv sync frozen"]
+        Sync --> Static["Exposure, Ruff, MyPy"]
+        Static --> Unit["Non-integration pytest"]
+        Unit --> Schema["Alembic upgrade and check"]
+    end
+    subgraph "Real backends"
+        Backends --> Secrets["scripts/init_local.py"]
+        Secrets --> Services["PostgreSQL and OpenSearch"]
+        Services --> Integration["scripts/run_integration.py"]
+        Integration --> Image["Build API image"]
+        Image --> API["API readiness smoke"]
+        API --> Down["docker compose down"]
+    end
+```
+
+CI separates deterministic checks from tests that require real PostgreSQL and OpenSearch. The API container starts after migration completion and backend health checks.
+
+**Compose exposure**: Published ports bind to loopback. OpenSearch security is disabled for this local stack.
+
+**Future profiles**: Redis and Qdrant use the `future` profile. No application module connects to either service.
+
+**Schema gate**: CI applies revision `0001_foundation` and runs `alembic check`. Readiness also requires that revision.
+
+**Status**: Complete for local/CI containers. Kubernetes, AKS, Azure resources, and deployment workflows are planned.
+
+See [Runtime and CI flow](docs/flows/runtime-ci.md).
+
+---
+
+## Build requirements
+
+- Python 3.11 through 3.14. CI and the image use Python 3.11.
+- `uv` 0.12.15. CI and the Dockerfile pin this version.
+- Git.
+- Docker with Compose for PostgreSQL/OpenSearch integration tests.
+- At least 4 GiB available to Docker is a practical OpenSearch local setting.
+
+Windows PowerShell:
+
+```powershell
+py -3.11 -m pip install uv==0.12.15
+uv sync --frozen --python 3.11
+```
+
+Linux or macOS:
+
+```sh
+python3.11 -m pip install uv==0.12.15
+uv sync --frozen --python 3.11
+```
+
+Linux may require the setting used by CI:
+
+```sh
+sudo sysctl -w vm.max_map_count=262144
+```
+
+Configuration comes from `.env` through `Settings`:
+
+| Variable | Default or source | Rule |
+| --- | --- | --- |
+| `DATABASE_URL` | Local SQLite | Compose uses PostgreSQL with `asyncpg` |
+| `OPENSEARCH_URL` | `http://localhost:9200` | `.env.example` uses port `19200` |
+| `OPENSEARCH_USERNAME`, `OPENSEARCH_PASSWORD` | Unset | Optional HTTP basic authentication |
+| `OPENSEARCH_REQUIRED` | `false` | Adds OpenSearch to readiness when true |
+| `API_READ_KEY`, `API_WRITE_KEY` | Unset | Must differ when both are set |
+| `ENVIRONMENT` | `local` | `production` is rejected |
+| `ALLOWED_HOSTS` | Localhost addresses | Empty and wildcard lists are rejected |
+| `MAX_REQUEST_BYTES` | `65536` | Range 1024 to 1048576 |
+| `REQUESTS_PER_MINUTE` | `120` | In-process fixed-window limit |
+| `MAX_CONCURRENT_REQUESTS` | `32` | In-process request limit |
+| `BODY_TIMEOUT_SECONDS` | `5` | Range above 0 through 60 |
+| `HANDLER_TIMEOUT_SECONDS` | `30` | Range above 0 through 300 |
+
+---
+
+## Building and running
 
 ```sh
 uv sync --frozen --python 3.11
@@ -99,110 +351,124 @@ uv run ops-data all --limit 100 --load
 uv run uvicorn apps.api.main:app --host 127.0.0.1 --port 8000 --no-access-log --no-proxy-headers
 ```
 
-`init_local.py` generates random credentials in ignored `.env` and refuses to overwrite an existing file. The API fails authentication when no valid key is configured. Visit [API docs](http://localhost:8000/docs), authorize with `API_READ_KEY` or `API_WRITE_KEY` from `.env`, and keep those values private. `/health` is liveness; `/ready` checks migrations, the incident table, and optionally OpenSearch. SQLite mode does not supply log search without OpenSearch.
+`scripts/init_local.py` fails rather than overwrite an existing `.env`.
 
-### PostgreSQL and OpenSearch with Docker
-
-Docker Desktop must have its Linux engine running, with enough memory for OpenSearch (4 GB or more allocated to Docker is a practical local starting point). On Linux, set `vm.max_map_count=262144` if required by OpenSearch.
+Container runtime:
 
 ```sh
 docker compose up -d --build --wait
 uv run python scripts/run_integration.py
 ```
 
-The API runs at `http://localhost:8000`, PostgreSQL at `localhost:55432`, and OpenSearch at `http://localhost:19200`. Compose migrations run before the API. All published ports bind to loopback; OpenSearch security is disabled only for this local environment. Do not expose this Compose stack publicly.
+The API listens on `127.0.0.1:8000`, PostgreSQL on `127.0.0.1:55432`, and OpenSearch on `127.0.0.1:19200`.
 
-To load data into Compose services, set `DATABASE_URL` in your shell to `postgresql+asyncpg://ops:<POSTGRES_PASSWORD>@localhost:55432/operations` using the generated password (never commit it), then:
+---
+
+## Commands / binaries / scripts
+
+| Command | Purpose |
+| --- | --- |
+| `uv run ops-data <dataset>` | Acquire and process a manifest dataset |
+| `uv run ops-data all --limit 100 --load` | Process bounded subsets and load SQL records |
+| `uv run ops-data <dataset> --full` | Process every record in the acquired file |
+| `uv run ops-data <dataset> --input <path> --sha256 <hash>` | Process a verified local source file |
+| `uv run ops-data all --limit 100 --load --index` | Load SQL and index logs in OpenSearch |
+| `uv run python scripts/init_local.py` | Create `.env` with random local secrets |
+| `uv run python scripts/smoke_api.py` | Run a real Uvicorn HTTP smoke test |
+| `uv run python scripts/run_integration.py` | Test real PostgreSQL and OpenSearch |
+| `uv run python scripts/check_repository.py` | Check tracked-file exposure patterns |
+| `uv run alembic upgrade head` | Apply schema revision 0001 |
+| `uv run alembic check` | Detect ORM-to-migration drift |
+| `docker compose up -d --build --wait` | Build and start the local stack |
+| `docker compose down` | Stop services and retain named volumes |
+
+`scripts/research_datasets.py` and `scripts/build_dataset_manifest.py` are maintainer research tools. They are not runtime commands.
+
+---
+
+## API / usage
+
+Create an explicitly synthetic manual incident:
 
 ```sh
-uv run ops-data all --limit 100 --load --index
+curl -X POST http://127.0.0.1:8000/api/v1/incidents \
+  -H "Authorization: Bearer $API_WRITE_KEY" \
+  -H "Idempotency-Key: demo-incident-1" \
+  -H "Content-Type: application/json" \
+  -d '{"source_id":"manual-example-1","title":"Synthetic example incident","status":"open","opened_at":"2026-01-01T12:00:00Z"}'
 ```
 
-Use `docker compose down` to stop services; named volumes retain data. Qdrant/Redis can be started with the `future` profile, but they have no application integration yet.
+List incidents:
 
-## Public data and licensing
+```sh
+curl http://127.0.0.1:8000/api/v1/incidents?limit=50 \
+  -H "Authorization: Bearer $API_READ_KEY"
+```
 
-The [dataset guide](docs/datasets.md) explains each source, schema, usage and limitations. The [machine-readable manifest](data/dataset_manifest.json) records source URLs, measured checksums/sizes/counts, actual schemas, intended use, license links, provenance and limitations.
+Search an indexed and authorized source:
 
-| Source | Verified default acquisition | Parser |
+```sh
+curl "http://127.0.0.1:8000/api/v1/logs?q=error&source=loghub-apache&limit=20" \
+  -H "Authorization: Bearer $API_READ_KEY"
+```
+
+| Endpoint | Access | Implemented behavior |
 | --- | --- | --- |
-| [BPI 2013, Volvo IT incidents](https://figshare.com/articles/dataset/BPI_Challenge_2013_incidents/12693914) | 7,554 traces / 65,533 events; 1,322,247 compressed bytes | gzip XES, complete-trace subsets |
-| [BPI 2014, Rabobank incident details](https://figshare.com/articles/dataset/_/12692378) | 46,809 rows (203 lack incident IDs); 14,306,331 bytes | semicolon CSV |
-| [Loghub Apache, OpenStack, BGL, HDFS, Zookeeper](https://github.com/logpai/loghub) | 2,000 raw lines each, pinned repository revision | dataset-specific raw-line parsers |
+| `GET /health` | Public | Liveness only |
+| `GET /ready` | Public | Database and optional OpenSearch readiness |
+| `POST /api/v1/incidents` | Writer | Idempotent create with audit event |
+| `GET /api/v1/incidents` | Reader or writer | Bounded pagination and exact source filter |
+| `GET /api/v1/incidents/{incident_id}` | Reader or writer | Fetch by internal UUID |
+| `GET /api/v1/logs` | Reader or writer | Authorized keyword search |
+| `GET /docs`, `GET /openapi.json` | Public | Generated API reference |
 
-BPI releases use 4TU General Terms of Use. Loghub permits research/academic use with attribution and license notice; it is not assumed to have the Apache software license. Review the original terms before other uses. Raw data and generated outputs are ignored by Git; no Git LFS is needed. Data can contain names and identifiers, so keep it local and access-controlled. The [Loghub notice](docs/LOGHUB-LICENSE.txt) accompanies acquired Loghub samples.
+---
 
-Default processing uses the first 100 records per source, or 100 **complete** BPI 2013 traces. `--full` processes all records in the acquired file:
+## Feature status
 
-```sh
-uv run ops-data all --full --load
-uv run ops-data bpi-2014 --full --timezone Europe/Amsterdam
-```
+| Feature | Status |
+| --- | --- |
+| Seven-source manifest and HTTPS acquisition | Complete |
+| Bronze/Silver/Gold processing and quarantine | Complete |
+| SQLite local mode and PostgreSQL loading | Complete |
+| OpenSearch indexing and keyword search | Complete |
+| Incident create/list/get API | Complete |
+| Local bearer roles and request guardrails | Complete |
+| Typed domain/service contracts | Complete |
+| Permission-checked read-only log tool | Complete |
+| Investigation, evidence, agent, and approval tables | Partial |
+| Agent, MCP, orchestration, RAG, dashboard, notebooks | Stubbed |
+| Redis and Qdrant Compose services | Stubbed |
+| Enterprise connectors and Entra/OIDC | Planned |
+| Dense/hybrid retrieval, BGE, reranking, ONNX/OpenVINO | Planned |
+| LangGraph supervisor and specialist agents | Planned |
+| Human approval workflow and action executor | Planned |
+| OpenTelemetry and Langfuse | Planned |
+| React dashboard, Kubernetes, AKS, Azure deployment | Planned |
 
-Timezone selection is an explicit assumption, not verified source metadata. Without it, timezone-naive timestamps remain null in normalized time fields while original strings are retained. Offset-bearing XES timestamps and BGL epoch seconds normalize to UTC. Ambiguous/nonexistent local times are rejected. The BPI 2013 opening time means first **observed** event, not guaranteed actual creation time. Generated incident titles are display labels, not invented descriptions.
+SQL tables and protocols alone do not make a feature operational. The [target architecture](docs/target-architecture.md) gives acceptance gates for planned phases.
 
-Full Loghub archive links are in the manifest. Download and unpack an archive separately, review its license, record its SHA-256, and import the uncompressed file:
+---
 
-```sh
-uv run ops-data loghub-hdfs --input /path/to/HDFS.log --sha256 <verified-sha256> --full --load --index
-```
+## Testing
 
-No archive is extracted automatically. A changed checksum requires deliberate manifest review; existing raw files are never silently overwritten. Full Loghub archive byte integrity has not been verified by the M1 sample acquisition.
-
-## Pipeline behavior
-
-- **Bronze:** original file bytes, partitioned by dataset and SHA-256.
-- **Silver:** separate incident, event and log Parquet contracts. Source attributes are JSON strings inside Parquet and JSON objects in database/index records. Normalized times are UTC ISO-8601 strings in Parquet.
-- **Gold:** incident history, observed event timelines, incident status counts, log severity counts and repeated-message frequencies. Repeated messages are a feature, not a claim of anomaly or root cause.
-- Invalid records go to a run-specific quarantine file. Run reports include accepted, duplicate and quarantined counts. Original bytes remain available.
-- Run identity includes input checksum, parser version, limit and timezone policy. Completed runs verify output checksums before reuse. Partial runs are rebuilt; corrupted Bronze fails closed.
-- SQL loading commits batches, and stable source identities allow replay after partial failure. OpenSearch uses deterministic document IDs. There is no distributed transaction across the database and search index; replay repairs interrupted indexing.
-
-The CLI is operator-only and assumes a trusted manifest. Do not expose arbitrary input paths/download URLs through a public endpoint. Very large files need capacity planning; M1 does not promise distributed ingestion or automatic schema drift recovery.
-
-## API
-
-| Endpoint | Access | Behavior |
-| --- | --- | --- |
-| `POST /api/v1/incidents` | writer | Validated create, required `Idempotency-Key`, atomic audit record |
-| `GET /api/v1/incidents` | reader/writer | Bounded offset pagination and optional source filter |
-| `GET /api/v1/incidents/{id}` | reader/writer | Retrieve a source-scoped incident |
-| `GET /api/v1/logs?q=...&source=...` | reader/writer | Typed read-only tool search with authorized source filtering |
-| `GET /health`, `GET /ready` | public | Liveness and dependency readiness |
-| `GET /docs`, `GET /openapi.json` | public | Interactive API reference and schema |
-
-Create body example (explicitly synthetic manual input):
-
-```json
-{"source_id":"manual-example-1","title":"Synthetic example incident","status":"open","opened_at":"2026-01-01T12:00:00Z"}
-```
-
-Send `Authorization: Bearer <API_WRITE_KEY>` and `Idempotency-Key: <unique-key>`. Reusing the same key/body returns the original record; different content returns 409. Client writes use the authenticated local-writer namespace and cannot impersonate benchmark sources. M1 keys identify local roles, not enterprise users; OIDC and named principals are planned before enterprise deployment.
-
-Investigation, report, approval and rejection endpoints are deliberately deferred. Schema tables for these future features do not imply working agents or remediation.
-
-## Verification
+Tests live in `tests/`. Most use temporary SQLite databases, synthetic files, and HTTP mocks. `tests/test_backends.py` requires PostgreSQL and OpenSearch environment variables and is marked `integration`.
 
 ```sh
+uv run python scripts/check_repository.py
 uv run ruff check .
 uv run ruff format --check .
 uv run mypy src apps
-uv run pytest -q
+uv run pytest -q -m "not integration"
+uv run alembic upgrade head
 uv run alembic check
 ```
 
-Unit/API tests use synthetic fixtures in temporary directories and real Alembic migrations. Backend tests skip unless `TEST_DATABASE_URL` and `TEST_OPENSEARCH_URL` are provided; `scripts/run_integration.py` configures these for local Compose. CI runs static checks, unit tests, PostgreSQL/OpenSearch integration and a container API smoke test. See [verification results](docs/verification.md) for actual outcomes and blockers.
+Real backend tests:
 
-## Layout and design
+```sh
+docker compose up -d --wait postgres opensearch
+uv run python scripts/run_integration.py
+```
 
-`apps/api` contains the HTTP boundary; `src/models`, `ingestion`, `pipelines`, `integrations`, `services`, `security` and `observability` implement the foundation. `infrastructure` holds migrations, container definitions and [SQL analytics](infrastructure/analytics.sql). Future agent/dashboard directories are explicitly marked as planned. See [architecture decisions](docs/architecture.md) and the [technology/milestone plan](docs/technology-plan.md).
-
-## Guardrails
-
-The [guardrail matrix and showcase walkthrough](docs/guardrails.md) separates enforced controls from later release gates. M1 includes request/body/rate/concurrency limits, host and download allowlists, redacted validation errors, timeout handling, replay safety and fail-closed production promotion. Run the negative tests to demonstrate the controls. See [SECURITY.md](SECURITY.md) for the security boundary.
-
-## Security and roadmap
-
-No secrets or raw datasets are committed. Database constraints scope identifiers; API schemas reject unknown fields. The current service cannot execute corrective actions. Before deployment, add enterprise identity, tenant/ACL isolation, TLS, secrets management, audited key rotation, distributed rate limits, retention, monitoring, backups and restore tests. Local role keys and a security-disabled local search container are not production security controls.
-
-**Next phase: C**, durable investigation runs/jobs and Redis coordination on the existing API/database foundation. Later phases add authorized connectors, incremental ETL, document ingestion and measured hybrid retrieval. Then implement evidence-grounded LangGraph agents, followed by mandatory approval-controlled remediation. Detailed choices for BGE, HNSW, RRF, MRR/nDCG, Langfuse, MSAL, Ray and Milvus are in the plan; none is claimed complete prematurely.
+The exposure script is a narrow repository check, not a complete secret scanner. See [verification history](docs/verification.md) for recorded results; command presence does not claim a fresh pass.
