@@ -120,7 +120,14 @@ class OpenSearch:
                 await asyncio.sleep(2**attempt)
         raise SearchUnavailable("bulk items exhausted retries; replay is safe")
 
-    async def search(self, query: str, source: str | None, limit: int) -> dict[str, Any]:
+    async def search(
+        self,
+        query: str,
+        source: str | None,
+        limit: int,
+        *,
+        allowed_sources: Sequence[str] | None = None,
+    ) -> dict[str, Any]:
         body: dict[str, Any] = {
             "size": limit,
             "query": {
@@ -130,6 +137,8 @@ class OpenSearch:
                 }
             },
         }
+        if allowed_sources is not None:
+            body["query"]["bool"]["filter"].append({"terms": {"source": list(allowed_sources)}})
         response = await self.request("POST", f"/{self.index}/_search", json=body)
         response.raise_for_status()
         return dict(response.json())

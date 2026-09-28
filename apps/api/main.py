@@ -11,18 +11,31 @@ import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import JsonValue
 from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from src.domain.contracts import LogSearchQuery
+from src.integrations.log_search import OpenSearchLogSearch
 from src.integrations.opensearch import OpenSearch, SearchUnavailable
 from src.models.contracts import IncidentCreate, IncidentView
 from src.models.database import AuditEvent, IdempotencyRecord, Incident
 from src.observability.logging import configure_logging
-from src.security.auth import Principal, principal, writer
+from src.security.auth import Principal, principal, tool_context, writer
 from src.security.guardrails import RequestGuardrails
 from src.services.db import make_engine, session_factory
+from src.services.errors import (
+    InvalidToolInput,
+    PermissionDenied,
+    ServiceError,
+    ToolBusy,
+    ToolNotFound,
+    ToolTimeout,
+)
+from src.services.logs import log_registry, search_envelope
+from src.services.logs import search_logs as run_log_search
 from src.services.settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -50,6 +63,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             base_url=config.opensearch_url, timeout=config.request_timeout, auth=auth
         ) as client:
             app.state.search = OpenSearch(client)
+            app.state.tools = log_registry(OpenSearchLogSearch(app.state.search))
             try:
                 yield
             finally:
@@ -109,6 +123,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return JSONResponse(
             status_code=503,
             content={"detail": "Search unavailable", "request_id": request.state.request_id},
+        )
+
+    @app.exception_handler(ServiceError)
+    async def service_error(request: Request, error: ServiceError) -> JSONResponse:
+        status = 503
+        detail = "Tool service unavailable"
+        if isinstance(error, PermissionDenied):
+            status, detail = 403, "Tool access denied"
+        elif isinstance(error, ToolNotFound):
+            status, detail = 404, "Tool not found"
+        elif isinstance(error, InvalidToolInput):
+            status, detail = 422, "Invalid tool input"
+        elif isinstance(error, ToolTimeout):
+            status, detail = 504, "Tool timed out"
+        return JSONResponse(
+            status_code=status,
+            content={"detail": detail, "request_id": request.state.request_id},
+            headers={"Retry-After": "1"} if isinstance(error, ToolBusy) else None,
         )
 
     @app.get("/health")
@@ -207,12 +239,18 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/v1/logs")
     async def search_logs(
+        request: Request,
         user: Annotated[Principal, Depends(principal)],
-        q: Annotated[str, Query(min_length=1, max_length=500)],
-        source: str | None = None,
+        q: Annotated[str, Query(min_length=1, max_length=500, pattern=r"\S")],
+        source: Annotated[str | None, Query(min_length=1, max_length=256, pattern=r"\S")] = None,
         limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    ) -> dict:  # type: ignore[type-arg]
-        return await app.state.search.search(q, source, limit)  # type: ignore[no-any-return]
+    ) -> dict[str, JsonValue]:
+        result = await run_log_search(
+            app.state.tools,
+            tool_context(user, request.state.request_id),
+            LogSearchQuery(query=q, source=source, limit=limit),
+        )
+        return search_envelope(result)
 
     return app
 

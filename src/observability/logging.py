@@ -13,6 +13,7 @@ class JSONFormatter(logging.Formatter):
         }
         for name in [
             "request_id",
+            "tool_name",
             "method",
             "path",
             "status_code",

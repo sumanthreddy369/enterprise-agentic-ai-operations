@@ -1,5 +1,6 @@
 import asyncio
 import os
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
@@ -7,6 +8,8 @@ import httpx
 import pytest
 from sqlalchemy import delete, func, select, text
 
+from src.domain.contracts import AuthorizationContext, LogSearchQuery
+from src.integrations.log_search import OpenSearchLogSearch
 from src.integrations.opensearch import OpenSearch
 from src.models.contracts import LogRecord
 from src.models.database import ApplicationLog
@@ -75,5 +78,19 @@ async def test_real_opensearch_index_and_retrieve() -> None:
             results = await adapter.search("outage", "synthetic-test", 10)
             assert results["hits"]["total"]["value"] == 1
             assert results["hits"]["hits"][0]["_source"]["synthetic"] is True
+            context = AuthorizationContext(
+                subject="integration-test",
+                tenant_id="local",
+                request_id="backend-test",
+                permissions=frozenset({"logs:read"}),
+                allowed_sources=frozenset({"synthetic-test"}),
+                expires_at=datetime.now(UTC) + timedelta(minutes=5),
+            )
+            typed = await OpenSearchLogSearch(adapter).search(
+                context, LogSearchQuery(query="outage")
+            )
+            assert typed.total == 1
+            assert typed.matches[0].record == record
+
         finally:
             await client.delete(f"/{index}")

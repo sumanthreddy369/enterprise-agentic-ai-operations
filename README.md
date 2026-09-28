@@ -2,11 +2,11 @@
 
 A data-first foundation for an enterprise incident investigation platform. It acquires public IT incident and infrastructure-log datasets, preserves their provenance, produces validated analytical data, and exposes authenticated incident and log-search APIs.
 
-**Current scope: Milestone 1.** No LLM agents, automated remediation, enterprise OAuth connectors, or RAG evaluation are implemented yet. The [technology plan](docs/technology-plan.md) assigns these to later milestones. This is a production-oriented portfolio foundation, not a production deployment certification.
+**Current scope: Milestone 1 data foundation plus Phase B interfaces.** No LLM agents, automated remediation, enterprise OAuth connectors, or RAG evaluation are implemented yet. The [technology plan](docs/technology-plan.md) assigns these to later milestones. This is a production-oriented portfolio foundation, not a production deployment certification.
 
 ## Target platform
 
-The [governing enterprise/Azure architecture and Phase A–M plan](docs/target-architecture.md) maps the current implementation to LangGraph specialists, MCP, optional A2A, hybrid RAG, LiteLLM, human approval, React and AKS. It includes an evidence-based status audit and acceptance gates. These are target capabilities; the existing Milestone 1 foundation remains the implemented baseline.
+The [governing enterprise/Azure architecture and Phase A–M plan](docs/target-architecture.md) maps the current implementation to LangGraph specialists, MCP, optional A2A, hybrid RAG, LiteLLM, human approval, React and AKS. It includes an evidence-based status audit and acceptance gates. These are target capabilities; the implemented baseline now includes the [Phase B contracts and permission-checked log tool](docs/phase-b.md).
 
 ## Architecture
 
@@ -112,7 +112,7 @@ The CLI is operator-only and assumes a trusted manifest. Do not expose arbitrary
 | `POST /api/v1/incidents` | writer | Validated create, required `Idempotency-Key`, atomic audit record |
 | `GET /api/v1/incidents` | reader/writer | Bounded offset pagination and optional source filter |
 | `GET /api/v1/incidents/{id}` | reader/writer | Retrieve a source-scoped incident |
-| `GET /api/v1/logs?q=...&source=...` | reader/writer | OpenSearch text search with exact source filter |
+| `GET /api/v1/logs?q=...&source=...` | reader/writer | Typed read-only tool search with authorized source filtering |
 | `GET /health`, `GET /ready` | public | Liveness and dependency readiness |
 | `GET /docs`, `GET /openapi.json` | public | Interactive API reference and schema |
 
@@ -150,4 +150,4 @@ The [guardrail matrix and showcase walkthrough](docs/guardrails.md) separates en
 
 No secrets or raw datasets are committed. Database constraints scope identifiers; API schemas reject unknown fields. The current service cannot execute corrective actions. Before deployment, add enterprise identity, tenant/ACL isolation, TLS, secrets management, audited key rotation, distributed rate limits, retention, monitoring, backups and restore tests. Local role keys and a security-disabled local search container are not production security controls.
 
-**Next milestone:** authorized connectors, incremental ETL, document ingestion and measured hybrid retrieval. Then implement evidence-grounded LangGraph agents, followed by mandatory approval-controlled remediation. Detailed choices for BGE, HNSW, RRF, MRR/nDCG, Langfuse, MSAL, Ray and Milvus are in the plan; none is claimed complete prematurely.
+**Next phase: C**, durable investigation runs/jobs and Redis coordination on the existing API/database foundation. Later phases add authorized connectors, incremental ETL, document ingestion and measured hybrid retrieval. Then implement evidence-grounded LangGraph agents, followed by mandatory approval-controlled remediation. Detailed choices for BGE, HNSW, RRF, MRR/nDCG, Langfuse, MSAL, Ray and Milvus are in the plan; none is claimed complete prematurely.
