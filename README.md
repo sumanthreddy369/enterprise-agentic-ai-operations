@@ -8,7 +8,61 @@ A data-first foundation for an enterprise incident investigation platform. It ac
 
 The [governing enterprise/Azure architecture and Phase Aâ€“M plan](docs/target-architecture.md) maps the current implementation to LangGraph specialists, MCP, optional A2A, hybrid RAG, LiteLLM, human approval, React and AKS. It includes an evidence-based status audit and acceptance gates. These are target capabilities; the implemented baseline now includes the [Phase B contracts and permission-checked log tool](docs/phase-b.md).
 
-## Architecture
+## Target enterprise flowchart
+
+The diagram below is the intended platform. **Implemented today:** data ingestion, incident APIs, OpenSearch log search, typed service contracts and a permission-checked read-only tool registry. Agents, MCP/A2A, hybrid RAG, model calls, approvals, React and Azure deployment remain planned. Human approval gates consequential execution.
+
+```mermaid
+flowchart TD
+    UI[React dashboard] <-->|REST and authenticated WebSocket| API[FastAPI / identity / authorization]
+    API --> RUN[Investigation service and durable job worker]
+    RUN --> SUP[LangGraph supervisor / planner]
+    SUP --> WORK[Incident / Log / Knowledge / Data-SQL / Security agents]
+    WORK --> TOOLS[Permission-enforcing tool service]
+    TOOLS --> MCP[MCP clients and servers]
+    MCP --> ENT[ServiceNow / GitHub / Splunk / documents / monitoring / SQL]
+    WORK --> RET[ACL-filtered retrieval / BM25 plus dense / RRF / reranker]
+    RET --> IDX[Qdrant primary / pgvector alternative / OpenSearch lexical]
+    WORK --> LLM[LiteLLM provider gateway]
+    LLM --> MODEL[Azure OpenAI / OpenAI / optional approved Qwen or Granite endpoint]
+    WORK --> REVIEW[Evidence correlation / reviewer / hypothesis validation]
+    REVIEW --> REPORT[Evidence-linked report and proposed action]
+    REPORT --> API
+    API --> APPROVAL[Authenticated human approval service]
+    APPROVAL --> EXEC[Allowlisted executor / timeout / rollback]
+    EXEC --> ENT
+    SUP -. optional delegated task .-> A2A[A2A boundary to independent agent service]
+    RUN --> STATE[PostgreSQL runs / checkpoints / audit / evidence]
+    RUN --> REDIS[Redis coordination and transient state]
+```
+
+Azure target: Azure OpenAI, Foundry, AKS, Blob Storage/ADLS, Key Vault, Entra ID, Azure Database for PostgreSQL, Azure Monitor and Application Insights. Azure ML is conditional on a training or managed model-lifecycle workload. No Azure resources are deployed by this repository yet.
+
+## Delivery status — 2026-09-27
+
+| Phase | Status |
+| --- | --- |
+| A: audit and foundation | Baseline audited; data/API/backend checks verified |
+| B: domain/service/tool interfaces | Complete; typed contracts and permission-checked log-search path |
+| C: durable async infrastructure | Next: PostgreSQL investigation runs/jobs and Redis coordination |
+| D–F: enterprise adapters, retrieval, agents | Planned |
+| G–I: MCP, conditional A2A, human approval | Planned |
+| J–M: evaluation, telemetry, security hardening, deployment/dashboard | Planned; feature-level checks and safeguards start earlier |
+
+Latest implementation verification: **64 local tests passed, 2 backend tests skipped locally**; real backend and container checks passed in [GitHub CI](https://github.com/sumanthreddy369/enterprise-agentic-ai-operations/actions/runs/36365649081). See [Phase B details](docs/phase-b.md) and the [full acceptance plan](docs/target-architecture.md).
+
+## Documentation guide
+
+- [Dataset catalog, schemas, provenance and reproduction](docs/datasets.md)
+- [Machine-readable dataset manifest](data/dataset_manifest.json)
+- [Phase A–M architecture and Azure mapping](docs/target-architecture.md)
+- [Technology choices and original milestone history](docs/technology-plan.md)
+- [Implemented tool boundary](docs/phase-b.md)
+- [Guardrails and showcase](docs/guardrails.md), [security boundary](SECURITY.md)
+- [Verification history](docs/verification.md), [ONNX/OpenVINO plan](docs/inference-optimization.md)
+- [Contribution workflow](CONTRIBUTING.md) and [ignore rules](.gitignore)
+
+## Implemented data flow
 
 ```mermaid
 flowchart LR
@@ -21,7 +75,8 @@ flowchart LR
   Silver --> PG[PostgreSQL incidents / events / logs]
   Silver --> OS[OpenSearch log index]
   PG --> API[FastAPI + RBAC + audit]
-  OS --> API
+  OS --> Tools[Typed log adapter + permission-checked tools]
+  Tools --> API
 ```
 
 Source IDs are namespaced. Loghub datasets are **not** linked to BPI incidents. Similar identifiers or timestamps do not establish relationships. BPI 2013 events link only to their original trace IDs. No fabricated resolutions or root-cause labels are generated.
@@ -67,7 +122,7 @@ Use `docker compose down` to stop services; named volumes retain data. Qdrant/Re
 
 ## Public data and licensing
 
-The [machine-readable manifest](data/dataset_manifest.json) records source URLs, measured checksums/sizes/counts, actual schemas, intended use, license links, provenance and limitations.
+The [dataset guide](docs/datasets.md) explains each source, schema, usage and limitations. The [machine-readable manifest](data/dataset_manifest.json) records source URLs, measured checksums/sizes/counts, actual schemas, intended use, license links, provenance and limitations.
 
 | Source | Verified default acquisition | Parser |
 | --- | --- | --- |

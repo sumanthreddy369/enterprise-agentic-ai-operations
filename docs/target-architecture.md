@@ -1,6 +1,6 @@
 # Enterprise target architecture and Phase A–M delivery plan
 
-Updated 2026-09-27. This is the governing target architecture requested by the project owner. It expands the original milestone roadmap; it does not relabel planned features as implemented. The original instruction to stop after Milestone 1 explains why the repository currently contains a tested data foundation rather than the full platform.
+Updated 2026-09-27. This is the governing target architecture requested by the project owner. It expands the original milestone roadmap; it does not relabel planned features as implemented. The initial Milestone 1 stop boundary was followed by authorized Phase B implementation. The repository now contains the tested data foundation and typed tool/service boundaries; Phase C is next.
 
 ## Architecture audit: what exists now
 
@@ -17,7 +17,7 @@ Updated 2026-09-27. This is the governing target architecture requested by the p
 | LiteLLM, A2A, pgvector, DeepEval, Azure deployment | No current implementation | Accepted in the target plan below; not installed/deployed by this documentation update. |
 | ONNX Runtime / OpenVINO | Inference optimization plan | Optional planned embedding/reranker backends, not implemented. |
 
-The prior verification report records 41 unit/API/security tests and 2 real-backend CI tests. This architecture audit inspects code, dependencies and infrastructure declarations; it does not constitute a fresh production-readiness or penetration test. The local Docker Desktop startup issue remains a known environment blocker.
+The latest Phase B verification records 64 local passing tests, 2 local backend skips, and successful real-backend/container CI. See [verification history](verification.md). This architecture audit inspects code, dependencies and infrastructure declarations; it does not constitute a fresh production-readiness or penetration test. The local Docker Desktop startup issue remains a known environment blocker.
 
 ## Corrected logical architecture
 
@@ -107,7 +107,7 @@ Qdrant and OpenSearch need their own approved managed or operated deployment cho
 - Commit and push each completed, verified implementation step to GitHub, as requested. Report what changed, which checks ran and any blockers.
 - Keep statuses honest: source code plus tests establish implementation; provider credentials and live results establish integration; actual deployed resources establish deployment.
 - Preserve the existing data foundation. Do not replace working modules with skeletons or claim placeholder interfaces are live integrations.
-- No Azure provisioning, paid model calls, model downloads or new runtime integrations occur in this architecture-only update.
+- Cloud provisioning, paid calls and live integration verification require their own implementation and evidence; documentation does not establish deployment.
 
 ## Primary references
 

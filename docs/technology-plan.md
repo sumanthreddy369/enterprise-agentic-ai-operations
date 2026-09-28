@@ -1,6 +1,6 @@
 # Technology decisions and milestone plan
 
-This document retains technology decisions and the original milestone history. The [enterprise target architecture and Phase A–M plan](target-architecture.md) is now the governing roadmap, including Azure, LiteLLM, pgvector, A2A, DeepEval and the React dashboard. **Milestone 1 is the completed implementation scope, not the final platform.** Later phases are planned, not delivered features.
+This document retains technology decisions and the original milestone history. The [enterprise target architecture and Phase A–M plan](target-architecture.md) is now the governing roadmap, including Azure, LiteLLM, pgvector, A2A, DeepEval and the React dashboard. **Milestone 1 and Phase B interfaces are delivered. Phase C is next.** The M1�M4 sections below retain the original grouping; the Phase A�M roadmap governs current execution. See [Phase B](phase-b.md) for the implemented tool boundary.
 
 ## What fits and where
 
@@ -52,7 +52,7 @@ Deliver reproducible acquisition for both BPI incident datasets and five Loghub 
 
 ### M3 — Evidence-grounded multi-agent investigations
 
-Implement the nine agents from the original brief using LangGraph, conditional routes, durable checkpointing, bounded concurrency and no unnecessary LLM calls. Expose investigation, evidence and report APIs. Every hypothesis references evidence and states uncertainty. Add Langfuse/OpenTelemetry and MCP tool instrumentation.
+Implement the five primary specialist workers in the governing architecture, retaining the original nine-agent brief as worker skills and review stages, using LangGraph, conditional routes, durable checkpointing, bounded concurrency and no unnecessary LLM calls. Expose investigation, evidence and report APIs. Every hypothesis references evidence and states uncertainty. Add Langfuse/OpenTelemetry and MCP tool instrumentation.
 
 ### M4 — Approval-controlled actions and operational hardening
 

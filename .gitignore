@@ -27,3 +27,20 @@ data/.locks/**
 *.safetensors
 *.pt
 .local/
+
+# Optional local inference exports and caches (source code under src/models stays tracked)
+*.onnx
+*.onnx.data
+*.ov
+/hf-cache/
+/artifacts/
+
+# Future dashboard dependencies and local build output
+node_modules/
+.next/
+
+# Local credentials and workstation artifacts
+*.pem
+*.key
+.DS_Store
+Thumbs.db
