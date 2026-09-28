@@ -4,6 +4,10 @@ A data-first foundation for an enterprise incident investigation platform. It ac
 
 **Current scope: Milestone 1.** No LLM agents, automated remediation, enterprise OAuth connectors, or RAG evaluation are implemented yet. The [technology plan](docs/technology-plan.md) assigns these to later milestones. This is a production-oriented portfolio foundation, not a production deployment certification.
 
+## Target platform
+
+The [governing enterprise/Azure architecture and Phase A–M plan](docs/target-architecture.md) maps the current implementation to LangGraph specialists, MCP, optional A2A, hybrid RAG, LiteLLM, human approval, React and AKS. It includes an evidence-based status audit and acceptance gates. These are target capabilities; the existing Milestone 1 foundation remains the implemented baseline.
+
 ## Architecture
 
 ```mermaid

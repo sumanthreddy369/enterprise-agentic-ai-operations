@@ -1,6 +1,6 @@
 # Technology decisions and milestone plan
 
-This is the implementation plan for `enterprise-agentic-ai-operations`, updated after the requested technology review. **Milestone 1 is the delivery boundary for this implementation.** Later phases below are planned work, not delivered features.
+This document retains technology decisions and the original milestone history. The [enterprise target architecture and Phase A–M plan](target-architecture.md) is now the governing roadmap, including Azure, LiteLLM, pgvector, A2A, DeepEval and the React dashboard. **Milestone 1 is the completed implementation scope, not the final platform.** Later phases are planned, not delivered features.
 
 ## What fits and where
 
@@ -38,7 +38,7 @@ This is the implementation plan for `enterprise-agentic-ai-operations`, updated 
 
 ### M1 — Enterprise data foundation (current)
 
-Deliver reproducible acquisition for both BPI incident datasets and five Loghub samples, immutable Bronze, validated Silver, analytical Gold, PostgreSQL schema/migrations, OpenSearch indexing/search, initial authenticated incident API, tests/static checks, container definitions, CI, README and a factual verification report. Keep unrelated sources independent. Commit and push the reviewed milestone. Stop implementation here.
+Deliver reproducible acquisition for both BPI incident datasets and five Loghub samples, immutable Bronze, validated Silver, analytical Gold, PostgreSQL schema/migrations, OpenSearch indexing/search, initial authenticated incident API, tests/static checks, container definitions, CI, README and a factual verification report. Keep unrelated sources independent. The original delivery stopped here as requested. Further development follows the Phase A–M plan.
 
 ### M2 — Live extraction and evaluated retrieval (next)
 
