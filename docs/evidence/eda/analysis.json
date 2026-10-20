@@ -1,0 +1,693 @@
+{
+  "generated_at": "2026-10-20T04:54:02.976705+00:00",
+  "runs": [
+    {
+      "dataset": "bpi-2013",
+      "run_id": "02692540c4bb265b461fb8f3",
+      "source_sha256": "6ec2136c607648608655802486df97a866f351668751b7ecbca51e1f8715d522",
+      "parser": "xes",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 7554,
+        "events": 65533,
+        "logs": 0,
+        "quarantined": 0,
+        "duplicates": 0
+      },
+      "tables": {
+        "incidents": {
+          "rows": 7554,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "title": 0,
+            "status": 0,
+            "source_status": 0,
+            "opened_at": 0,
+            "closed_at": 1981
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "status_counts": [
+            {
+              "status": "closed",
+              "len": 5573
+            },
+            {
+              "status": "in_progress",
+              "len": 2
+            },
+            {
+              "status": "resolved",
+              "len": 90
+            },
+            {
+              "status": "unknown",
+              "len": 1889
+            }
+          ],
+          "timestamps": {
+            "opened_at": {
+              "present": 7554,
+              "naive": 0,
+              "min_utc": "2010-03-31T14:59:42+00:00",
+              "max_utc": "2012-05-06T05:27:59+00:00"
+            },
+            "closed_at": {
+              "present": 5573,
+              "naive": 0,
+              "min_utc": "2012-05-01T05:58:08+00:00",
+              "max_utc": "2012-05-22T23:22:25+00:00"
+            }
+          },
+          "duration_pairs": 5573,
+          "negative_duration_pairs": 0,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "title": 0.0,
+            "status": 0.0,
+            "source_status": 0.0,
+            "opened_at": 0.0,
+            "closed_at": 26.225
+          },
+          "observed_duration_hours": {
+            "count": 5573,
+            "min": 0.02638888888888889,
+            "median": 199.33388888888888,
+            "p90": 671.8883333333339,
+            "p95": 1138.7679444444436,
+            "max": 18512.4425
+          }
+        },
+        "events": {
+          "rows": 65533,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "incident_source_id": 0,
+            "activity": 0,
+            "occurred_at": 0
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "timestamps": {
+            "occurred_at": {
+              "present": 65533,
+              "naive": 0,
+              "min_utc": "2010-03-31T14:59:42+00:00",
+              "max_utc": "2012-05-22T23:22:25+00:00"
+            }
+          },
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "incident_source_id": 0.0,
+            "activity": 0.0,
+            "occurred_at": 0.0
+          },
+          "lifecycle": {
+            "ordering": "source_record within source and incident; not inferred time order",
+            "events_per_incident": {
+              "count": 7554,
+              "min": 1.0,
+              "median": 6.0,
+              "p90": 17.0,
+              "p95": 23.0,
+              "max": 123.0
+            },
+            "unique_paths": 535,
+            "cases_with_repeated_activity": 7539,
+            "top_transitions": [
+              {
+                "from": "Accepted",
+                "to": "Accepted",
+                "count": 32565
+              },
+              {
+                "from": "Accepted",
+                "to": "Completed",
+                "count": 7544
+              },
+              {
+                "from": "Queued",
+                "to": "Queued",
+                "count": 7033
+              },
+              {
+                "from": "Completed",
+                "to": "Completed",
+                "count": 6321
+              },
+              {
+                "from": "Completed",
+                "to": "Queued",
+                "count": 4508
+              },
+              {
+                "from": "Completed",
+                "to": "Unmatched",
+                "count": 3
+              },
+              {
+                "from": "Accepted",
+                "to": "Queued",
+                "count": 3
+              },
+              {
+                "from": "Queued",
+                "to": "Unmatched",
+                "count": 2
+              }
+            ],
+            "top_path_counts": [
+              1754,
+              525,
+              392,
+              392,
+              300,
+              252,
+              230,
+              227,
+              174,
+              149
+            ]
+          }
+        }
+      },
+      "events_without_source_incident": 0
+    },
+    {
+      "dataset": "bpi-2014",
+      "run_id": "169ec0925ae7c982490346f0",
+      "source_sha256": "621ad800120ffa2f022c9b93d13aec3adc86da7cae4938150c0859d59ef29de3",
+      "parser": "bpi-csv",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 46606,
+        "events": 0,
+        "logs": 0,
+        "quarantined": 203,
+        "duplicates": 0
+      },
+      "tables": {
+        "incidents": {
+          "rows": 46606,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "title": 0,
+            "status": 0,
+            "source_status": 0,
+            "opened_at": 46606,
+            "closed_at": 46606
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "status_counts": [
+            {
+              "status": "closed",
+              "len": 46597
+            },
+            {
+              "status": "unknown",
+              "len": 9
+            }
+          ],
+          "timestamps": {
+            "opened_at": {
+              "present": 0,
+              "naive": 0,
+              "min_utc": null,
+              "max_utc": null
+            },
+            "closed_at": {
+              "present": 0,
+              "naive": 0,
+              "min_utc": null,
+              "max_utc": null
+            }
+          },
+          "duration_pairs": 0,
+          "negative_duration_pairs": 0,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "title": 0.0,
+            "status": 0.0,
+            "source_status": 0.0,
+            "opened_at": 100.0,
+            "closed_at": 100.0
+          },
+          "observed_duration_hours": {
+            "count": 0,
+            "min": null,
+            "median": null,
+            "p90": null,
+            "p95": null,
+            "max": null
+          }
+        }
+      },
+      "events_without_source_incident": 0
+    },
+    {
+      "dataset": "loghub-apache",
+      "run_id": "fff27f9cf2c86073e81792e7",
+      "source_sha256": "c7efa3eb686e3a96bd2f8f4457b2a7887e9cf2f3649327f1b4e87af841363ce8",
+      "parser": "Apache",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 0,
+        "events": 0,
+        "logs": 2000,
+        "quarantined": 0,
+        "duplicates": 0
+      },
+      "tables": {
+        "logs": {
+          "rows": 2000,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "occurred_at": 2000,
+            "timestamp_raw": 0,
+            "severity": 0,
+            "source_severity": 0,
+            "message": 0,
+            "component": 2000
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "severity_counts": [
+            {
+              "severity": "error",
+              "len": 595
+            },
+            {
+              "severity": "info",
+              "len": 1405
+            }
+          ],
+          "timestamps": {
+            "occurred_at": {
+              "present": 0,
+              "naive": 0,
+              "min_utc": null,
+              "max_utc": null
+            }
+          },
+          "repeated_message_excess_rows": 1114,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "occurred_at": 100.0,
+            "timestamp_raw": 0.0,
+            "severity": 0.0,
+            "source_severity": 0.0,
+            "message": 0.0,
+            "component": 100.0
+          },
+          "message_length_chars": {
+            "count": 2000,
+            "min": 22.0,
+            "median": 48.0,
+            "p90": 55.0,
+            "p95": 55.0,
+            "max": 74.0
+          },
+          "distinct_nonnull_components": 0
+        }
+      },
+      "events_without_source_incident": 0
+    },
+    {
+      "dataset": "loghub-bgl",
+      "run_id": "46a21537f6043b69553645c5",
+      "source_sha256": "2a819ea540909db682005c9cf948387a40729b5c2e9f19d430e29ce704825496",
+      "parser": "BGL",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 0,
+        "events": 0,
+        "logs": 2000,
+        "quarantined": 0,
+        "duplicates": 0
+      },
+      "tables": {
+        "logs": {
+          "rows": 2000,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "occurred_at": 0,
+            "timestamp_raw": 0,
+            "severity": 0,
+            "source_severity": 0,
+            "message": 0,
+            "component": 0
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "severity_counts": [
+            {
+              "severity": "critical",
+              "len": 347
+            },
+            {
+              "severity": "error",
+              "len": 41
+            },
+            {
+              "severity": "info",
+              "len": 1597
+            },
+            {
+              "severity": "unknown",
+              "len": 7
+            },
+            {
+              "severity": "warning",
+              "len": 8
+            }
+          ],
+          "timestamps": {
+            "occurred_at": {
+              "present": 2000,
+              "naive": 0,
+              "min_utc": "2005-06-03T22:42:50+00:00",
+              "max_utc": "2006-01-03T15:13:09+00:00"
+            }
+          },
+          "repeated_message_excess_rows": 633,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "occurred_at": 0.0,
+            "timestamp_raw": 0.0,
+            "severity": 0.0,
+            "source_severity": 0.0,
+            "message": 0.0,
+            "component": 0.0
+          },
+          "message_length_chars": {
+            "count": 2000,
+            "min": 17.0,
+            "median": 26.0,
+            "p90": 138.0,
+            "p95": 164.0,
+            "max": 409.0
+          },
+          "distinct_nonnull_components": 5
+        }
+      },
+      "events_without_source_incident": 0
+    },
+    {
+      "dataset": "loghub-hdfs",
+      "run_id": "eb6eabadc40ba7dc2e46da4e",
+      "source_sha256": "7c967000980c086ed55fa6544ba4f05fe66d44622795e890c68caf8bbb635035",
+      "parser": "HDFS",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 0,
+        "events": 0,
+        "logs": 2000,
+        "quarantined": 0,
+        "duplicates": 0
+      },
+      "tables": {
+        "logs": {
+          "rows": 2000,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "occurred_at": 2000,
+            "timestamp_raw": 0,
+            "severity": 0,
+            "source_severity": 0,
+            "message": 0,
+            "component": 0
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "severity_counts": [
+            {
+              "severity": "info",
+              "len": 1920
+            },
+            {
+              "severity": "warning",
+              "len": 80
+            }
+          ],
+          "timestamps": {
+            "occurred_at": {
+              "present": 0,
+              "naive": 0,
+              "min_utc": null,
+              "max_utc": null
+            }
+          },
+          "repeated_message_excess_rows": 0,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "occurred_at": 100.0,
+            "timestamp_raw": 0.0,
+            "severity": 0.0,
+            "source_severity": 0.0,
+            "message": 0.0,
+            "component": 0.0
+          },
+          "message_length_chars": {
+            "count": 2000,
+            "min": 49.0,
+            "median": 93.0,
+            "p90": 122.0,
+            "p95": 131.0,
+            "max": 2480.0
+          },
+          "distinct_nonnull_components": 6
+        }
+      },
+      "events_without_source_incident": 0
+    },
+    {
+      "dataset": "loghub-openstack",
+      "run_id": "b6c5ea0b61823b690275dd47",
+      "source_sha256": "025a1bc64ff5b2ef4a4bda6c4ad5c5c5f18478b71cd1ad2b0676e01625629f2f",
+      "parser": "OpenStack",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 0,
+        "events": 0,
+        "logs": 2000,
+        "quarantined": 0,
+        "duplicates": 0
+      },
+      "tables": {
+        "logs": {
+          "rows": 2000,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "occurred_at": 2000,
+            "timestamp_raw": 0,
+            "severity": 0,
+            "source_severity": 0,
+            "message": 0,
+            "component": 0
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "severity_counts": [
+            {
+              "severity": "info",
+              "len": 1969
+            },
+            {
+              "severity": "warning",
+              "len": 31
+            }
+          ],
+          "timestamps": {
+            "occurred_at": {
+              "present": 0,
+              "naive": 0,
+              "min_utc": null,
+              "max_utc": null
+            }
+          },
+          "repeated_message_excess_rows": 452,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "occurred_at": 100.0,
+            "timestamp_raw": 0.0,
+            "severity": 0.0,
+            "source_severity": 0.0,
+            "message": 0.0,
+            "component": 0.0
+          },
+          "message_length_chars": {
+            "count": 2000,
+            "min": 48.0,
+            "median": 115.0,
+            "p90": 128.0,
+            "p95": 147.0,
+            "max": 234.0
+          },
+          "distinct_nonnull_components": 10
+        }
+      },
+      "events_without_source_incident": 0
+    },
+    {
+      "dataset": "loghub-zookeeper",
+      "run_id": "40629c260ec1b5c3a2c31ee9",
+      "source_sha256": "e40e0af5ef9eb6e4097200f260b9d1f626b3676f861a432e87977242e75543d8",
+      "parser": "Zookeeper",
+      "pipeline_version": "1",
+      "timezone": null,
+      "counts": {
+        "incidents": 0,
+        "events": 0,
+        "logs": 2000,
+        "quarantined": 0,
+        "duplicates": 0
+      },
+      "tables": {
+        "logs": {
+          "rows": 2000,
+          "null_counts": {
+            "source": 0,
+            "source_id": 0,
+            "source_file_sha256": 0,
+            "source_record": 0,
+            "synthetic": 0,
+            "attributes": 0,
+            "occurred_at": 2000,
+            "timestamp_raw": 0,
+            "severity": 0,
+            "source_severity": 0,
+            "message": 0,
+            "component": 0
+          },
+          "duplicate_source_keys": 0,
+          "synthetic_rows": 0,
+          "severity_counts": [
+            {
+              "severity": "error",
+              "len": 13
+            },
+            {
+              "severity": "info",
+              "len": 669
+            },
+            {
+              "severity": "warning",
+              "len": 1318
+            }
+          ],
+          "timestamps": {
+            "occurred_at": {
+              "present": 0,
+              "naive": 0,
+              "min_utc": null,
+              "max_utc": null
+            }
+          },
+          "repeated_message_excess_rows": 1307,
+          "missing_percent": {
+            "source": 0.0,
+            "source_id": 0.0,
+            "source_file_sha256": 0.0,
+            "source_record": 0.0,
+            "synthetic": 0.0,
+            "attributes": 0.0,
+            "occurred_at": 100.0,
+            "timestamp_raw": 0.0,
+            "severity": 0.0,
+            "source_severity": 0.0,
+            "message": 0.0,
+            "component": 0.0
+          },
+          "message_length_chars": {
+            "count": 2000,
+            "min": 7.0,
+            "median": 46.0,
+            "p90": 64.0,
+            "p95": 95.0,
+            "max": 295.0
+          },
+          "distinct_nonnull_components": 96
+        }
+      },
+      "events_without_source_incident": 0
+    }
+  ],
+  "scope": "Independent historical datasets; no cross-dataset joins or causal claims"
+}

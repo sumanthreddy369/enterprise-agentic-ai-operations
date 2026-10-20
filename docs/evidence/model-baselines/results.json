@@ -1,0 +1,392 @@
+{
+  "generated_at": "2026-10-20T04:54:33.879050+00:00",
+  "source_sha256": "6ec2136c607648608655802486df97a866f351668751b7ecbca51e1f8715d522",
+  "run_id": "02692540c4bb265b461fb8f3",
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26300-SP0",
+  "execution": "Local CPU; no Azure compute or GPU",
+  "split": "SHA256(source:incident), first 8 hex digits modulo 100; 70/15/15",
+  "case_counts": {
+    "train": 5333,
+    "validation": 1133,
+    "test": 1088
+  },
+  "test_paths_seen_in_train": 1033,
+  "test_unseen_paths": 55,
+  "selected_by_validation_macro_f1": "Markov order 2",
+  "results": [
+    {
+      "model": "Majority",
+      "order": 0,
+      "fit_seconds": 0.012922200025059283,
+      "contexts": 1,
+      "validation": {
+        "transitions": 8837,
+        "accuracy": 0.5650107502546113,
+        "macro_f1": 0.18051337671728127,
+        "mean_case_accuracy": 0.4888758659961361,
+        "evaluation_seconds": 0.013573500007623807,
+        "transitions_per_second": 651047.9975714838,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 4993
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 2099
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Accepted",
+            "count": 1744
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Accepted",
+            "count": 1
+          }
+        ]
+      },
+      "test": {
+        "transitions": 8564,
+        "accuracy": 0.5634049509574965,
+        "macro_f1": 0.18018522667861678,
+        "mean_case_accuracy": 0.4983694803208097,
+        "evaluation_seconds": 0.012918699998408556,
+        "transitions_per_second": 662914.9992688887,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 4825
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 2003
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Accepted",
+            "count": 1734
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Accepted",
+            "count": 2
+          }
+        ]
+      },
+      "unseen_path_test": {
+        "transitions": 1583,
+        "accuracy": 0.6348704990524321,
+        "macro_f1": 0.19416537867078826,
+        "mean_case_accuracy": 0.6202440159140863,
+        "evaluation_seconds": 0.002282600005855784,
+        "transitions_per_second": 693507.4020586045,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 1005
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 151
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Accepted",
+            "count": 425
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Accepted",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "model": "Markov order 1",
+      "order": 1,
+      "fit_seconds": 0.021522700000787154,
+      "contexts": 4,
+      "validation": {
+        "transitions": 8837,
+        "accuracy": 0.7913318999660518,
+        "macro_f1": 0.5385293140723684,
+        "mean_case_accuracy": 0.6787703796713811,
+        "evaluation_seconds": 0.01375809998717159,
+        "transitions_per_second": 642312.529218413,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 4993
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 1132
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Completed",
+            "count": 967
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Completed",
+            "count": 710
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Queued",
+            "count": 1033
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Accepted",
+            "count": 1
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Completed",
+            "count": 1
+          }
+        ]
+      },
+      "test": {
+        "transitions": 8564,
+        "accuracy": 0.7971742176553013,
+        "macro_f1": 0.5455507884355879,
+        "mean_case_accuracy": 0.6853282679206095,
+        "evaluation_seconds": 0.013176599983125925,
+        "transitions_per_second": 649940.0460640178,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 4825
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 1086
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Completed",
+            "count": 917
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Completed",
+            "count": 649
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Queued",
+            "count": 1085
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Completed",
+            "count": 2
+          }
+        ]
+      },
+      "unseen_path_test": {
+        "transitions": 1583,
+        "accuracy": 0.9330385344283006,
+        "macro_f1": 0.6391218465907978,
+        "mean_case_accuracy": 0.9043801902988552,
+        "evaluation_seconds": 0.0022493999858852476,
+        "transitions_per_second": 703743.2248302486,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 1005
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 55
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Completed",
+            "count": 96
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Completed",
+            "count": 49
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Queued",
+            "count": 376
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Completed",
+            "count": 2
+          }
+        ]
+      }
+    },
+    {
+      "model": "Markov order 2",
+      "order": 2,
+      "fit_seconds": 0.02969570001005195,
+      "contexts": 10,
+      "validation": {
+        "transitions": 8837,
+        "accuracy": 0.8568518728075138,
+        "macro_f1": 0.6085012517455564,
+        "mean_case_accuracy": 0.7524924706384326,
+        "evaluation_seconds": 0.014956600003642961,
+        "transitions_per_second": 590842.8384691429,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 4993
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 1132
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Completed",
+            "count": 847
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Queued",
+            "count": 1732
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Queued",
+            "count": 120
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Completed",
+            "count": 11
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Accepted",
+            "count": 1
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Queued",
+            "count": 1
+          }
+        ]
+      },
+      "test": {
+        "transitions": 8564,
+        "accuracy": 0.8588276506305464,
+        "macro_f1": 0.608916247577656,
+        "mean_case_accuracy": 0.7529917537274775,
+        "evaluation_seconds": 0.013954699999885634,
+        "transitions_per_second": 613700.0437179005,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 4825
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 1086
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Completed",
+            "count": 804
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Queued",
+            "count": 1726
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Queued",
+            "count": 113
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Completed",
+            "count": 8
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Queued",
+            "count": 2
+          }
+        ]
+      },
+      "unseen_path_test": {
+        "transitions": 1583,
+        "accuracy": 0.9355653821857233,
+        "macro_f1": 0.6088242863205405,
+        "mean_case_accuracy": 0.898132433984595,
+        "evaluation_seconds": 0.0026547999877948314,
+        "transitions_per_second": 596278.4417951179,
+        "confusion": [
+          {
+            "actual": "Accepted",
+            "predicted": "Accepted",
+            "count": 1005
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Accepted",
+            "count": 55
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Completed",
+            "count": 53
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Queued",
+            "count": 423
+          },
+          {
+            "actual": "Completed",
+            "predicted": "Queued",
+            "count": 43
+          },
+          {
+            "actual": "Unmatched",
+            "predicted": "Queued",
+            "count": 2
+          },
+          {
+            "actual": "Queued",
+            "predicted": "Completed",
+            "count": 2
+          }
+        ]
+      }
+    }
+  ]
+}
