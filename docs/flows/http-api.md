@@ -4,7 +4,7 @@
 
 `apps.api.main.create_app` creates settings, the async SQLAlchemy engine, session factory, HTTP client, OpenSearch client, and sealed log tool registry. Shutdown disposes the engine.
 
-`/health` reports process liveness. `/ready` verifies Alembic revision `0001_foundation` and queries the incident table. It checks OpenSearch when `OPENSEARCH_REQUIRED=true`.
+`/health` reports process liveness. `/ready` verifies Alembic revision `0003_worker_leases` and queries the incident table. It checks OpenSearch when `OPENSEARCH_REQUIRED=true`.
 
 ## Request boundary
 
@@ -22,4 +22,6 @@ List limits are 1 to 200 with offsets from 0 to 100000. The source filter is exa
 
 Create requires a writer and `Idempotency-Key`. The key hash includes identity. The request digest covers the validated body. Incident, idempotency, and audit rows commit together. Integrity races roll back and attempt one replay lookup.
 
-Status: **Complete** for local create/list/get. Investigation, reports, approvals, WebSockets, and enterprise identity are **Planned**.
+Status: **Complete** for local incident create/list/get and investigation submission/get/cancel.
+See [investigation flow](investigations.md). Local evidence reports are implemented; model-backed agents, approvals,
+WebSockets, and enterprise identity are **Planned**.

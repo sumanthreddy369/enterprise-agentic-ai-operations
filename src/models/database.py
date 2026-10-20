@@ -99,9 +99,19 @@ class HistoricalResolution(Identity, Base):
 
 class InvestigationRun(Identity, Base):
     __tablename__ = "investigation_runs"
+    __table_args__ = (Index("uq_investigation_submission", "submission_key", unique=True),)
     incident_id: Mapped[str] = mapped_column(ForeignKey("incidents.id"), index=True)
     status: Mapped[str] = mapped_column(String(32), default="pending")
     requested_by: Mapped[str] = mapped_column(String(256))
+    tenant_id: Mapped[str] = mapped_column(String(256), default="local", server_default="local")
+    revision: Mapped[int] = mapped_column(default=0, server_default="0")
+    question: Mapped[str | None] = mapped_column(Text)
+    submission_key: Mapped[str | None] = mapped_column(String(64))
+    request_hash: Mapped[str | None] = mapped_column(String(64))
+    lease_token: Mapped[str | None] = mapped_column(String(36))
+    lease_until: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    attempts: Mapped[int] = mapped_column(default=0, server_default="0")
+    report: Mapped[dict[str, Any] | None] = mapped_column(JSON)
 
 
 class InvestigationEvidence(Identity, Base):

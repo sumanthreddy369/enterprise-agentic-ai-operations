@@ -64,7 +64,8 @@ async def test_health_readiness_openapi(client: httpx.AsyncClient) -> None:
     assert response.headers["X-Request-ID"] == "verified-id"
     assert (await client.get("/ready")).status_code == 200
     assert "/api/v1/incidents" in (await client.get("/openapi.json")).json()["paths"]
-    assert (await client.post("/api/v1/investigations", headers=WRITE, json={})).status_code == 404
+    assert "/api/v1/investigations" in (await client.get("/openapi.json")).json()["paths"]
+    assert (await client.post("/api/v1/investigations", headers=WRITE, json={})).status_code == 422
 
 
 async def test_unmigrated_database_not_ready(tmp_path) -> None:

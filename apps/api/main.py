@@ -17,6 +17,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from apps.api.investigations import router as investigation_router
 from src.domain.contracts import LogSearchQuery
 from src.integrations.log_search import OpenSearchLogSearch
 from src.integrations.opensearch import OpenSearch, SearchUnavailable
@@ -33,6 +34,11 @@ from src.services.errors import (
     ToolBusy,
     ToolNotFound,
     ToolTimeout,
+)
+from src.services.investigations import (
+    InvestigationConflict,
+    InvestigationNotFound,
+    InvestigationUnavailable,
 )
 from src.services.logs import log_registry, search_envelope
 from src.services.logs import search_logs as run_log_search
@@ -73,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         title="Enterprise AI Operations — Data Foundation", version="0.1.0", lifespan=lifespan
     )
     app.state.settings = config
+    app.include_router(investigation_router)
 
     @app.middleware("http")
     async def request_logging(request: Request, call_next):  # type: ignore[no-untyped-def]
@@ -130,7 +137,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         status = 503
         detail = "Tool service unavailable"
         if isinstance(error, PermissionDenied):
-            status, detail = 403, "Tool access denied"
+            status, detail = 403, "Access denied"
+        elif isinstance(error, InvestigationConflict):
+            status, detail = 409, "Investigation revision, transition or replay conflict"
+        elif isinstance(error, InvestigationNotFound):
+            status, detail = 404, "Investigation or incident not found"
+        elif isinstance(error, InvestigationUnavailable):
+            status, detail = 503, "Investigation service unavailable"
         elif isinstance(error, ToolNotFound):
             status, detail = 404, "Tool not found"
         elif isinstance(error, InvalidToolInput):
@@ -153,7 +166,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             version = await database.scalar(text("SELECT version_num FROM alembic_version"))
             await database.execute(select(Incident.id).limit(1))
-            dependencies["database"] = version == "0001_foundation"
+            dependencies["database"] = version == "0003_worker_leases"
         except SQLAlchemyError:
             pass
         if config.opensearch_required:
