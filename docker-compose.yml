@@ -53,6 +53,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+  worker:
+    build: {context: ., dockerfile: infrastructure/Dockerfile}
+    command: ["/opt/venv/bin/python", "-m", "src.services.incident_worker"]
+    restart: on-failure:3
+    environment:
+      DATABASE_URL: postgresql+asyncpg://ops:${POSTGRES_PASSWORD}@postgres:5432/operations
+    depends_on:
+      migrate: {condition: service_completed_successfully}
   redis:
     image: redis:7.4.2-alpine
     profiles: ["future"]

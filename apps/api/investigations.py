@@ -1,4 +1,4 @@
-"""Local-role investigation submission API; execution remains unavailable."""
+"""Local-role investigation submission, cancellation and evidence report API."""
 
 from datetime import UTC, datetime, timedelta
 from typing import Annotated

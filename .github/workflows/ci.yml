@@ -18,6 +18,7 @@ jobs:
       - run: uv run ruff format --check .
       - run: uv run mypy src apps
       - run: uv run pytest -q -m "not integration"
+      - run: uv run python scripts/smoke_investigation.py
       - run: uv run alembic upgrade head
       - run: uv run alembic check
   backends:
@@ -32,10 +33,11 @@ jobs:
       - run: sudo sysctl -w vm.max_map_count=262144
       - run: docker compose up -d --wait postgres opensearch
       - run: uv run python scripts/run_integration.py
-      - run: docker compose build api
+      - run: docker compose build api worker
       - name: Container API smoke test
         run: |
-          docker compose up -d --wait api
+          docker compose up -d --wait api worker
           curl --fail http://localhost:8000/ready
+          uv run python scripts/smoke_compose.py
       - if: always()
         run: docker compose down
